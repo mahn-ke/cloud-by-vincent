@@ -2,7 +2,7 @@ services:
   app:
     image: nextcloud:latest
     ports:
-      - 8080:80
+      - 2563:80
     links:
       - database
     volumes:
