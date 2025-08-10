@@ -15,6 +15,7 @@ services:
       - MYSQL_PASSWORD=${POSTGRES_PASSWORD}
       - MYSQL_HOST=database
       - OVERWRITEPROTOCOL=https
+      - NC_maintenance_window_start=4
 
   database:
     image: mariadb:latest
