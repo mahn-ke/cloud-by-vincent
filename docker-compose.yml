@@ -39,6 +39,9 @@ services:
       - nextcloud:/var/www/html
     restart: unless-stopped
     entrypoint: /cron.sh
+    environment:
+      - PHP_MEMORY_LIMIT=512M
+      - PHP_OPCACHE_MEMORY_CONSUMPTION=256
 
 volumes:
   nextcloud:
