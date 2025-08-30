@@ -30,6 +30,16 @@ services:
       - MYSQL_USER=${POSTGRES_USER}
       - TZ=Europe/Berlin
 
+  cron:
+    image: nextcloud:latest
+    depends_on:
+      - app
+      - database
+    volumes:
+      - nextcloud:/var/www/html
+    restart: unless-stopped
+    entrypoint: /cron.sh
+
 volumes:
   nextcloud:
   database:
