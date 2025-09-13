@@ -1,7 +1,7 @@
 #http
 services:
   app:
-    image: nextcloud:latest
+    image: nextcloud:31.0.8-apache
     ports:
       - 2563:80
     links:
@@ -16,10 +16,11 @@ services:
       - MYSQL_HOST=database
       - OVERWRITEPROTOCOL=https
       - NC_maintenance_window_start=4
+      - NC_default_phone_region=DE
       - PHP_OPCACHE_MEMORY_CONSUMPTION=256
 
   database:
-    image: mariadb:latest
+    image: mariadb:12.0.2-noble
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
       - database:/var/lib/mysql
@@ -31,7 +32,7 @@ services:
       - TZ=Europe/Berlin
 
   cron:
-    image: nextcloud:latest
+    image: nextcloud:31.0.8-apache
     depends_on:
       - app
       - database
