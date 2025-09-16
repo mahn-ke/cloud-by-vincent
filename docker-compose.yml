@@ -1,7 +1,7 @@
 #http
 services:
   app:
-    image: nextcloud:31.0.8-apache
+    image: nextcloud:31.0.9-apache
     ports:
       - 2563:80
     links:
@@ -32,7 +32,7 @@ services:
       - TZ=Europe/Berlin
 
   cron:
-    image: nextcloud:31.0.8-apache
+    image: nextcloud:31.0.9-apache
     depends_on:
       - app
       - database
