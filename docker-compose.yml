@@ -16,13 +16,13 @@ services:
       - NC_maintenance_window_start=4
       - NC_default_phone_region=DE
       - PHP_OPCACHE_MEMORY_CONSUMPTION=256
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     links:
       - database
       - redis
     depends_on:
       - redis
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
 
   redis:
     image: redis:8.2.2-alpine
