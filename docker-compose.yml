@@ -18,6 +18,17 @@ services:
       - NC_maintenance_window_start=4
       - NC_default_phone_region=DE
       - PHP_OPCACHE_MEMORY_CONSUMPTION=256
+    links:
+      - redis
+    depends_on:
+      - redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  redis:
+    image: redis:8.2.2-alpine
+    restart: always
+    command: redis-server
 
   database:
     image: mariadb:12.0.2-noble
