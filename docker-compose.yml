@@ -4,8 +4,6 @@ services:
     image: nextcloud:32.0.0-apache
     ports:
       - 2563:80
-    links:
-      - database
     volumes:
       - nextcloud:/var/www/html
     restart: unless-stopped
@@ -19,6 +17,7 @@ services:
       - NC_default_phone_region=DE
       - PHP_OPCACHE_MEMORY_CONSUMPTION=256
     links:
+      - database
       - redis
     depends_on:
       - redis
