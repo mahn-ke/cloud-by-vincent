@@ -8,7 +8,7 @@ terraform {
   required_providers {
     allinkl = {
       source  = "ViMaSter/allinkl"
-      version = "0.1.5"
+      version = "0.1.7"
     }
     keycloak = {
       source  = "keycloak/keycloak"
