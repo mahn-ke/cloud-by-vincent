@@ -1,7 +1,7 @@
 #nextcloud
 services:
   app:
-    image: nextcloud:32.0.2-apache
+    image: nextcloud:32.0.3-apache
     ports:
       - 2563:80
     volumes:
@@ -42,7 +42,7 @@ services:
       - TZ=Europe/Berlin
 
   cron:
-    image: nextcloud:32.0.2-apache
+    image: nextcloud:32.0.3-apache
     depends_on:
       - app
       - database
