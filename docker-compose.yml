@@ -6,6 +6,7 @@ services:
       - 2563:80
     volumes:
       - nextcloud:/var/www/html
+      - ./plugins/sharelinkviewtracker:/var/www/html/custom_apps/sharelinkviewtracker
     restart: unless-stopped
     environment:
       - MYSQL_DATABASE=${POSTGRES_DB}
@@ -48,6 +49,7 @@ services:
       - database
     volumes:
       - nextcloud:/var/www/html
+      - ./plugins/sharelinkviewtracker:/var/www/html/custom_apps/sharelinkviewtracker
     restart: unless-stopped
     entrypoint: /cron.sh
     environment:

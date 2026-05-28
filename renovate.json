@@ -1,4 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>mahn-ke/.github//renovate/default"]
+  "extends": ["github>mahn-ke/.github//renovate/default"],
+  "gitSubmodules": {
+    "enabled": true,
+    "branchTopic": "submodule-{{{depName}}}",
+    "commitMessageTopic": "submodule {{{depName}}}"
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["git-submodules"],
+      "matchPackageNames": ["plugins/sharelinkviewtracker"],
+      "versioning": "git",
+      "followTag": "main"
+    }
+  ]
 }
