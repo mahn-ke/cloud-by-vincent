@@ -31,7 +31,7 @@ services:
     command: redis-server
 
   database:
-    image: mariadb:12.2.2-noble
+    image: mariadb:12.3.3-noble
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
       - database:/var/lib/mysql
