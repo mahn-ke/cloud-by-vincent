@@ -1,0 +1,28 @@
+name: Test packaged Nextcloud app
+
+on:
+  pull_request:
+    paths: ['app/**', 'tests/**', 'docker-compose.yml', '.github/workflows/test-app.yml']
+  push:
+    branches: [main]
+    paths: ['app/**', 'tests/**', 'docker-compose.yml', '.github/workflows/test-app.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Validate shell and Compose configuration
+        run: |
+          sh -n app/*.sh tests/integration.sh
+          docker compose config --quiet
+      - name: Build cloud image with released app
+        run: docker build -t cloud-sharelinkviewtracker:local app
+      - name: Test app initialization lifecycle
+        run: sh tests/integration.sh

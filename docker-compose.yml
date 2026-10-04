@@ -1,12 +1,17 @@
 #nextcloud
 services:
   app:
-    image: nextcloud:33.0.9-apache
+    image: ghcr.io/mahn-ke/cloud-by-vincent:latest
     ports:
       - 2563:80
     volumes:
       - nextcloud:/var/www/html
-      - ./plugins/sharelinkviewtracker:/var/www/html/custom_apps/sharelinkviewtracker
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cloud/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 120s
     restart: unless-stopped
     environment:
       - MYSQL_DATABASE=${POSTGRES_DB}
@@ -43,15 +48,16 @@ services:
       - TZ=Europe/Berlin
 
   cron:
-    image: nextcloud:33.0.9-apache
+    image: ghcr.io/mahn-ke/cloud-by-vincent:latest
     depends_on:
-      - app
-      - database
+      app:
+        condition: service_healthy
+      database:
+        condition: service_started
     volumes:
       - nextcloud:/var/www/html
-      - ./plugins/sharelinkviewtracker:/var/www/html/custom_apps/sharelinkviewtracker
     restart: unless-stopped
-    entrypoint: /cron.sh
+    entrypoint: /usr/local/bin/cloud/cron.sh
     environment:
       - PHP_MEMORY_LIMIT=512M
       - PHP_OPCACHE_MEMORY_CONSUMPTION=256
