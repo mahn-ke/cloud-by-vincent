@@ -56,7 +56,10 @@ jobs:
         shell: pwsh
         run: |
           $version = docker exec -u www-data cloud-app-1 php occ config:app:get sharelinkviewtracker installed_version --default-value=absent
-          if ($LASTEXITCODE -ne 0 -or "$version" -ne 'absent') { throw 'Recovery only applies to a first installation' }
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read installed app version' }
+          $version = @($version)[-1].Trim()
+          Write-Host "Installed tracker version: $version"
+          if ($version -ne 'absent') { throw 'Recovery only applies to a first installation' }
           docker exec cloud-app-1 php -r 'require "/var/www/html/config/config.php"; exit(!empty($CONFIG["installed"]) && !empty($CONFIG["maintenance"]) ? 0 : 1);'
           if ($LASTEXITCODE -ne 0) { throw 'Expected the diagnosed maintenance state' }
           docker exec -u www-data cloud-app-1 php occ app:enable sharelinkviewtracker
