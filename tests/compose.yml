@@ -1,0 +1,26 @@
+services:
+  app:
+    image: cloud-sharelinkviewtracker:local
+    environment:
+      SQLITE_DATABASE: nextcloud
+      NEXTCLOUD_ADMIN_USER: integration-admin
+      NEXTCLOUD_ADMIN_PASSWORD: disposable-integration-password
+    volumes:
+      - nextcloud:/var/www/html
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/cloud/healthcheck.sh"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+      start_period: 10s
+  cron:
+    image: cloud-sharelinkviewtracker:local
+    entrypoint: /usr/local/bin/cloud/cron.sh
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - nextcloud:/var/www/html
+
+volumes:
+  nextcloud:
