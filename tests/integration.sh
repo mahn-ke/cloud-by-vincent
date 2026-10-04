@@ -21,9 +21,14 @@ if (($apps["enabled"]["sharelinkviewtracker"] ?? null) !== $argv[1]) { exit(1); 
 ' "$initial_version"
 compose up -d --wait --wait-timeout 120 cron
 compose stop --timeout 1 cron
+compose exec -T -u www-data app php occ app:disable sharelinkviewtracker
+compose exec -T -u www-data app php occ config:app:delete sharelinkviewtracker installed_version
+compose exec -T app rm -rf /var/www/html/custom_apps/sharelinkviewtracker
 compose restart app
 compose up -d --wait --wait-timeout 120 app
 compose exec -T app /usr/local/bin/cloud/healthcheck.sh
+version=$(compose exec -T -u www-data app php occ config:app:get sharelinkviewtracker installed_version)
+test "$version" = "$initial_version"
 
 compose exec -T app php -r '
 $path = "/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml";

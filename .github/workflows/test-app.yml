@@ -12,13 +12,17 @@ on:
         type: boolean
         default: false
         description: Inspect production app startup logs without changing containers
+      recover_first_install:
+        type: boolean
+        default: false
+        description: Complete the failed tracker v1.0.0 first installation
 
 permissions:
   contents: read
 
 jobs:
   integration:
-    if: inputs.diagnose != true
+    if: inputs.diagnose != true && inputs.recover_first_install != true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -42,3 +46,22 @@ jobs:
         run: |
           docker logs --tail 100 cloud-app-1
           docker inspect --format '{{json .State.Health}}' cloud-app-1
+
+  recover:
+    if: inputs.recover_first_install == true
+    runs-on: hetzner2
+    environment: production
+    steps:
+      - name: Complete tracker first installation
+        shell: pwsh
+        run: |
+          $version = docker exec -u www-data cloud-app-1 php occ config:app:get sharelinkviewtracker installed_version --default-value=absent
+          if ($LASTEXITCODE -ne 0 -or "$version" -ne 'absent') { throw 'Recovery only applies to a first installation' }
+          docker exec cloud-app-1 php -r 'require "/var/www/html/config/config.php"; exit(!empty($CONFIG["installed"]) && !empty($CONFIG["maintenance"]) ? 0 : 1);'
+          if ($LASTEXITCODE -ne 0) { throw 'Expected the diagnosed maintenance state' }
+          docker exec -u www-data cloud-app-1 php occ app:enable sharelinkviewtracker
+          if ($LASTEXITCODE -ne 0) { throw 'App enablement failed; retaining maintenance' }
+          docker exec -u www-data cloud-app-1 php occ maintenance:mode --off
+          if ($LASTEXITCODE -ne 0) { throw 'Could not complete maintenance' }
+          docker restart cloud-app-1
+          if ($LASTEXITCODE -ne 0) { throw 'Restart failed' }
