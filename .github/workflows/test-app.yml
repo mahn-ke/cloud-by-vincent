@@ -7,12 +7,18 @@ on:
     branches: [main]
     paths: ['app/**', 'tests/**', 'docker-compose.yml', '.github/workflows/test-app.yml']
   workflow_dispatch:
+    inputs:
+      diagnose:
+        type: boolean
+        default: false
+        description: Inspect production app startup logs without changing containers
 
 permissions:
   contents: read
 
 jobs:
   integration:
+    if: inputs.diagnose != true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -26,3 +32,13 @@ jobs:
         run: docker build -t cloud-sharelinkviewtracker:local app
       - name: Test app initialization lifecycle
         run: sh tests/integration.sh
+
+  diagnose:
+    if: inputs.diagnose == true
+    runs-on: hetzner2
+    steps:
+      - name: Inspect app startup
+        shell: pwsh
+        run: |
+          docker logs --tail 100 cloud-app-1
+          docker inspect --format '{{json .State.Health}}' cloud-app-1
