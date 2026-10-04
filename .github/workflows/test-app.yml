@@ -7,22 +7,12 @@ on:
     branches: [main]
     paths: ['app/**', 'tests/**', 'docker-compose.yml', '.github/workflows/test-app.yml']
   workflow_dispatch:
-    inputs:
-      diagnose:
-        type: boolean
-        default: false
-        description: Inspect production app startup logs without changing containers
-      recover_first_install:
-        type: boolean
-        default: false
-        description: Complete the failed tracker v1.0.0 first installation
 
 permissions:
   contents: read
 
 jobs:
   integration:
-    if: inputs.diagnose != true && inputs.recover_first_install != true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -36,37 +26,3 @@ jobs:
         run: docker build -t cloud-sharelinkviewtracker:local app
       - name: Test app initialization lifecycle
         run: sh tests/integration.sh
-
-  diagnose:
-    if: inputs.diagnose == true
-    runs-on: hetzner2
-    steps:
-      - name: Inspect app startup
-        shell: pwsh
-        run: |
-          docker logs --tail 100 cloud-app-1
-          docker inspect --format '{{json .State.Health}}' cloud-app-1
-
-  recover:
-    if: inputs.recover_first_install == true
-    runs-on: hetzner2
-    environment: production
-    steps:
-      - name: Complete tracker first installation
-        shell: pwsh
-        run: |
-          $version = docker exec -u www-data cloud-app-1 php occ config:app:get sharelinkviewtracker installed_version --default-value=absent
-          if ($LASTEXITCODE -ne 0) { throw 'Could not read installed app version' }
-          $version = @($version)[-1].Trim()
-          Write-Host "Installed tracker version: $version"
-          if ($version -notin @('absent', '1.0.0')) { throw 'Recovery only applies to tracker v1.0.0 initialization' }
-          docker exec cloud-app-1 php -r 'exit((string) simplexml_load_file("/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml")->version === "1.0.0" ? 0 : 1);'
-          if ($LASTEXITCODE -ne 0) { throw 'Unexpected packaged tracker version' }
-          docker exec cloud-app-1 php -r 'require "/var/www/html/config/config.php"; exit(!empty($CONFIG["installed"]) && !empty($CONFIG["maintenance"]) ? 0 : 1);'
-          if ($LASTEXITCODE -ne 0) { throw 'Expected the diagnosed maintenance state' }
-          docker exec -u www-data cloud-app-1 php occ app:enable sharelinkviewtracker
-          if ($LASTEXITCODE -ne 0) { throw 'App enablement failed; retaining maintenance' }
-          docker exec -u www-data cloud-app-1 php occ maintenance:mode --off
-          if ($LASTEXITCODE -ne 0) { throw 'Could not complete maintenance' }
-          docker restart cloud-app-1
-          if ($LASTEXITCODE -ne 0) { throw 'Restart failed' }

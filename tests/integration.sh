@@ -30,6 +30,11 @@ compose exec -T app /usr/local/bin/cloud/healthcheck.sh
 version=$(compose exec -T -u www-data app php occ config:app:get sharelinkviewtracker installed_version)
 test "$version" = "$initial_version"
 
+compose exec -T app rm -rf /var/www/html/custom_apps/sharelinkviewtracker
+compose restart app
+compose up -d --wait --wait-timeout 120 app
+compose exec -T app /usr/local/bin/cloud/healthcheck.sh
+
 compose exec -T app php -r '
 $path = "/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml";
 $info = simplexml_load_file($path);
