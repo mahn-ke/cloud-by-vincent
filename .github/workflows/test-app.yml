@@ -59,7 +59,9 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Could not read installed app version' }
           $version = @($version)[-1].Trim()
           Write-Host "Installed tracker version: $version"
-          if ($version -ne 'absent') { throw 'Recovery only applies to a first installation' }
+          if ($version -notin @('absent', '1.0.0')) { throw 'Recovery only applies to tracker v1.0.0 initialization' }
+          docker exec cloud-app-1 php -r 'exit((string) simplexml_load_file("/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml")->version === "1.0.0" ? 0 : 1);'
+          if ($LASTEXITCODE -ne 0) { throw 'Unexpected packaged tracker version' }
           docker exec cloud-app-1 php -r 'require "/var/www/html/config/config.php"; exit(!empty($CONFIG["installed"]) && !empty($CONFIG["maintenance"]) ? 0 : 1);'
           if ($LASTEXITCODE -ne 0) { throw 'Expected the diagnosed maintenance state' }
           docker exec -u www-data cloud-app-1 php occ app:enable sharelinkviewtracker
