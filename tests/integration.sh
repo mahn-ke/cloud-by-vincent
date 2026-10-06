@@ -14,21 +14,11 @@ trap cleanup EXIT
 
 initial_version=$(docker run --rm --entrypoint php cloud-sharelinkviewtracker:local -r 'echo simplexml_load_file("/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml")->version;')
 next_version=$(docker run --rm --entrypoint php cloud-sharelinkviewtracker:local -r '$parts = explode(".", $argv[1]); $parts[2] = (int) $parts[2] + 1; echo implode(".", $parts);' "$initial_version")
-previous_version=$(docker run --rm --entrypoint php cloud-sharelinkviewtracker:local -r '$parts = explode(".", $argv[1]); $parts[2] = max(0, (int) $parts[2] - 1); echo implode(".", $parts);' "$initial_version")
 compose up -d --wait --wait-timeout 180 app
 compose exec -T -u www-data app php occ app:list --output=json | docker run --rm -i --entrypoint php cloud-sharelinkviewtracker:local -r '
 $apps = json_decode(stream_get_contents(STDIN), true, 512, JSON_THROW_ON_ERROR);
 if (($apps["enabled"]["sharelinkviewtracker"] ?? null) !== $argv[1]) { exit(1); }
 ' "$initial_version"
-compose exec -T -u www-data app php occ config:app:set sharelinkviewtracker installed_version --value="$previous_version"
-compose exec -T -u www-data app php occ app:disable sharelinkviewtracker
-compose exec -T -u www-data app php occ maintenance:mode --on
-compose restart app
-compose up -d --wait --wait-timeout 120 app
-version=$(compose exec -T -u www-data app php occ config:app:get sharelinkviewtracker installed_version)
-test "$version" = "$initial_version"
-compose exec -T app php -r 'require "/var/www/html/config/config.php"; exit(!empty($CONFIG["maintenance"]) ? 1 : 0);'
-
 compose up -d --wait --wait-timeout 120 cron
 compose stop --timeout 1 cron
 compose exec -T -u www-data app php occ app:disable sharelinkviewtracker

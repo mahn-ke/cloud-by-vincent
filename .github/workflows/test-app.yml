@@ -26,3 +26,5 @@ jobs:
         run: docker build -t cloud-sharelinkviewtracker:local app
       - name: Test app initialization lifecycle
         run: sh tests/integration.sh
+      - name: Test interrupted managed maintenance recovery
+        run: sh tests/recovery-integration.sh
