@@ -1,4 +1,4 @@
-ARG SHARELINKVIEWTRACKER_IMAGE=ghcr.io/vimaster/nextcloud-sharelinkviewtracker:v1.0.0@sha256:068433b64ad503686a99093fe85fb6356fe352ba6bbc1d87b22c2c5e79840564
+ARG SHARELINKVIEWTRACKER_IMAGE=ghcr.io/vimaster/nextcloud-sharelinkviewtracker:v1.0.1@sha256:76d8a675dfa1f817b6ca2c6954bd68702b6eb28e09802200eff51e723b813d44
 FROM ${SHARELINKVIEWTRACKER_IMAGE} AS tracker
 
 FROM nextcloud:34.0.4-apache
