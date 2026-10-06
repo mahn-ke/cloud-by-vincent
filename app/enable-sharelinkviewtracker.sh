@@ -17,12 +17,14 @@ fi
 
 current=$(php /var/www/html/occ config:app:get sharelinkviewtracker installed_version --default-value='')
 packaged=$(php -r 'echo simplexml_load_file("/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml")->version;')
-if [ -n "$current" ] && [ "$current" != "$packaged" ]; then
+has_migrations=$(find /var/www/html/custom_apps/sharelinkviewtracker/lib/Migration -type f -name '*.php' -print -quit 2>/dev/null || true)
+if [ -n "$current" ] && [ "$current" != "$packaged" ] && [ -n "$has_migrations" ]; then
     php /var/www/html/occ upgrade --no-interaction
 fi
 php /var/www/html/occ app:enable sharelinkviewtracker
 if [ "${CLOUD_MANAGED_MAINTENANCE:-0}" = 1 ]; then
     php /var/www/html/occ maintenance:mode --off
+    rm -f /var/www/html/.sharelinkviewtracker-managed-maintenance
 fi
 php -r 'echo simplexml_load_file("/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml")->version;' > /var/www/html/.sharelinkviewtracker-ready
 flock -u 9

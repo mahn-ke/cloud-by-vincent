@@ -24,6 +24,7 @@ services:
       - PHP_OPCACHE_MEMORY_CONSUMPTION=256
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - CLOUD_RECOVER_MANAGED_MAINTENANCE=1
     links:
       - database
       - redis
