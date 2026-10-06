@@ -3,7 +3,6 @@ set -eu
 
 exec 9>/var/www/html/.sharelinkviewtracker.lock
 flock -x 9
-    if [ -n "$current" ] && [ "$current" != "$version" ]; then
 
 source=/opt/nextcloud-apps/sharelinkviewtracker
 target=/var/www/html/custom_apps/sharelinkviewtracker
@@ -35,7 +34,7 @@ if [ -f /var/www/html/config/config.php ]; then
     if [ "$maintenance" = yes ]; then
         if [ "${CLOUD_RECOVER_MANAGED_MAINTENANCE:-0}" = 1 ] && [ ! -f "$managed_marker" ]; then
             current=$(su -p www-data -s /bin/sh -c 'php /var/www/html/occ config:app:get sharelinkviewtracker installed_version --default-value=""')
-            if [ "$current" != "$version" ]; then
+            if [ -n "$current" ] && [ "$current" != "$version" ]; then
                 touch "$managed_marker"
             fi
         fi
