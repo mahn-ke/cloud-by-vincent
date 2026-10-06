@@ -20,7 +20,7 @@ compose exec -T -u www-data app php occ app:list --output=json | docker run --rm
 $apps = json_decode(stream_get_contents(STDIN), true, 512, JSON_THROW_ON_ERROR);
 if (($apps["enabled"]["sharelinkviewtracker"] ?? null) !== $argv[1]) { exit(1); }
 ' "$initial_version"
-compose.exec -T -u www-data app php occ config:app:set sharelinkviewtracker installed_version --value="$previous_version"
+compose exec -T -u www-data app php occ config:app:set sharelinkviewtracker installed_version --value="$previous_version"
 compose exec -T -u www-data app php occ app:disable sharelinkviewtracker
 compose exec -T -u www-data app php occ maintenance:mode --on
 compose restart app
