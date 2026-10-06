@@ -3,6 +3,7 @@ set -eu
 
 cd "$(dirname "$0")/.."
 project="cloud-tracker-recovery-test-$$"
+export CLOUD_RECOVER_MANAGED_MAINTENANCE=1
 compose() {
     docker compose -p "$project" -f tests/compose.yml "$@"
 }
