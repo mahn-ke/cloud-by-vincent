@@ -1,13 +1,1 @@
-{
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>mahn-ke/.github//renovate/default"],
-  "packageRules": [
-    {
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["ghcr.io/vimaster/nextcloud-sharelinkviewtracker"],
-      "versioning": "semver",
-      "pinDigests": true,
-      "automerge": false
-    }
-  ]
-}
+{"$schema":"https://docs.renovatebot.com/renovate-schema.json","extends":["github\u003emahn-ke/.github//renovate/default"],"packageRules":[{"automerge":false,"matchDatasources":["docker"],"matchPackageNames":["ghcr.io/vimaster/nextcloud-sharelinkviewtracker"],"pinDigests":true,"versioning":"semver"}]}
