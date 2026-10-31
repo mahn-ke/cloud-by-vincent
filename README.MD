@@ -14,11 +14,26 @@ host. Both web and cron use it; no source submodule or plugin bind mount is used
 The app is downloaded at build time, not startup. Renovate updates the app image
 reference and pins its digest, with explicit review rather than automerge.
 
+## Paperless Forwarder
+
+The cloud image also packages `paperlessforwarder` from its GHCR app artifact.
+The app and cron containers share the `PAPERLESS_FORWARDER_MODE`, user ID, and
+scope path; the Paperless API token is passed to the cron container only.
+Forwarding stays off by default, and the default path is the narrow
+`/Paperless/_forwarder-test` canary directory. Configure the token as the
+`PAPERLESS_API_TOKEN` deployment secret; set the `PAPERLESS_FORWARDER_MODE`
+deployment secret to `live` only for the canary. The configured Nextcloud user
+defaults to the intended account.
+
+The app upgrade lifecycle and readiness marker are managed alongside the share
+tracker. The app code is synced into `custom_apps` before Nextcloud starts, and
+cron waits until both packaged app versions match the initialized volume.
+
 ### First deployment
 
 1. Commit the app release implementation and publish its `v1.0.0` tag first.
-2. Make `ghcr.io/vimaster/nextcloud-sharelinkviewtracker` public. The shared image
-	build currently pulls dependencies without a ViMaSter registry login.
+2. Make both app packages public. The shared image build pulls dependencies
+	without a ViMaSter registry login.
 3. Back up the existing Nextcloud database and volume.
 4. Merge the cloud changes only after the app artifact is available. The existing
 	shared workflow builds and deploys the derived image. Do not edit generated
@@ -50,10 +65,13 @@ not a substitute for restoring a database/volume backup after migrations.
 
 ### Local integration checks
 
-Build the app-only image in the app repository first, then run here:
+Build the Paperless Forwarder app artifact in its repository first, then run
+these commands from this repository:
 
 ```sh
-docker build --build-arg SHARELINKVIEWTRACKER_IMAGE=sharelinkviewtracker-artifact:local \
+docker build -f ../nextcloud-PaperlessForwarder/packaging/Dockerfile \
+  -t paperlessforwarder-artifact:local ../nextcloud-PaperlessForwarder
+docker build --build-arg PAPERLESSFORWARDER_IMAGE=paperlessforwarder-artifact:local \
   -t cloud-sharelinkviewtracker:local app
 sh tests/integration.sh
 ```

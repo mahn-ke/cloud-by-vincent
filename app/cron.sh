@@ -2,11 +2,15 @@
 set -eu
 
 version=$(php -r 'echo simplexml_load_file("/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml")->version;')
+paperless_version=$(php -r 'echo simplexml_load_file("/opt/nextcloud-apps/paperlessforwarder/appinfo/info.xml")->version;')
 while true; do
     (
         exec 9>/var/www/html/.sharelinkviewtracker.lock
         flock -s 9
-        if [ -f /var/www/html/.sharelinkviewtracker-ready ] && [ "$(cat /var/www/html/.sharelinkviewtracker-ready)" = "$version" ]; then
+        if [ -f /var/www/html/.sharelinkviewtracker-ready ] \
+            && [ "$(cat /var/www/html/.sharelinkviewtracker-ready)" = "$version" ] \
+            && [ -f /var/www/html/.paperlessforwarder-ready ] \
+            && [ "$(cat /var/www/html/.paperlessforwarder-ready)" = "$paperless_version" ]; then
             su -p www-data -s /bin/sh -c 'php -f /var/www/html/cron.php' 9>&- || echo >&2 "Nextcloud cron failed; retrying next cycle."
         fi
     )
