@@ -27,6 +27,18 @@ if (($apps["enabled"]["paperlessforwarder"] ?? null) !== $argv[1]) { exit(1); }
 ' "$paperless_version"
 ready_version=$(compose exec -T app cat /var/www/html/.paperlessforwarder-ready)
 test "$ready_version" = "$paperless_version"
+webdav() {
+    code=$(compose exec -T app curl -s -o /dev/null -w '%{http_code}' -u integration-admin:disposable-integration-password \
+        "$@")
+    test "$code" = 201 || {
+        echo >&2 "WebDAV request $* returned $code"
+        exit 1
+    }
+}
+dav=http://localhost/remote.php/dav/files/integration-admin
+webdav -X MKCOL "$dav/Paperless"
+webdav -X PUT --data-binary 'integration upload' "$dav/Paperless/upload.pdf"
+webdav -X PUT --data-binary 'integration upload' "$dav/upload.pdf"
 compose up -d --wait --wait-timeout 120 cron
 compose stop --timeout 1 cron
 compose exec -T -u www-data app php occ app:disable sharelinkviewtracker
@@ -77,4 +89,4 @@ compose run --rm --no-deps --entrypoint /usr/local/bin/cloud/entrypoint.sh app a
     echo >&2 "Expected downgrade refusal"
     exit 1
 }
-echo "Fresh installation, restart, app-only upgrade, maintenance, and downgrade checks passed."
+echo "Fresh installation, WebDAV upload, restart, app-only upgrade, maintenance, and downgrade checks passed."
