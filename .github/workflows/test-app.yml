@@ -22,6 +22,14 @@ jobs:
         run: |
           sh -n app/*.sh tests/integration.sh
           docker compose config --quiet
+          docker compose config --format json | jq -e '
+            (.services.app.environment | has("PAPERLESS_API_TOKEN") | not) and
+            (.services.cron.environment | has("PAPERLESS_API_TOKEN")) and
+            (.services.app.environment.PAPERLESS_FORWARDER_MODE == "off") and
+            (.services.cron.environment.PAPERLESS_FORWARDER_MODE == "off") and
+            (.services.app.environment.PAPERLESS_FORWARDER_PATH == "/Paperless/_forwarder-test") and
+            (.services.cron.environment.PAPERLESS_FORWARDER_PATH == "/Paperless/_forwarder-test")
+          '
       - name: Build cloud image with released app
         run: docker build -t cloud-sharelinkviewtracker:local app
       - name: Test app initialization lifecycle
