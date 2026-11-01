@@ -19,11 +19,14 @@ reference and pins its digest, with explicit review rather than automerge.
 The cloud image also packages `paperlessforwarder` from its GHCR app artifact.
 The app and cron containers share the `PAPERLESS_FORWARDER_MODE`, user ID, and
 scope path; the Paperless API token is passed to the cron container only.
-Forwarding stays off by default, and the default path is the narrow
-`/Paperless/_forwarder-test` canary directory. Configure the token as the
+Forwarding stays off by default, and the default path is `/Paperless`, including
+its subdirectories. Configure the token as the
 `PAPERLESS_API_TOKEN` deployment secret; set the `PAPERLESS_FORWARDER_MODE`
-deployment secret to `live` only for the canary. The configured Nextcloud user
-defaults to the intended account.
+deployment secret to `live` to enable forwarding. Production uses this scope
+after successful canary validation. For a new deployment, first override
+`PAPERLESS_FORWARDER_PATH` to `/Paperless/_forwarder-test` for both containers
+until the canary passes. The configured Nextcloud user defaults to the intended
+account.
 
 The app upgrade lifecycle and readiness marker are managed alongside the share
 tracker. The app code is synced into `custom_apps` before Nextcloud starts, and
