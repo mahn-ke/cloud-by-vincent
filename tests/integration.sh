@@ -17,6 +17,8 @@ paperless_version=$(docker run --rm --entrypoint php cloud-sharelinkviewtracker:
 next_version=$(docker run --rm --entrypoint php cloud-sharelinkviewtracker:local -r '$parts = explode(".", $argv[1]); $parts[2] = (int) $parts[2] + 1; echo implode(".", $parts);' "$initial_version")
 paperless_next_version=$(docker run --rm --entrypoint php cloud-sharelinkviewtracker:local -r '$parts = explode(".", $argv[1]); $parts[2] = (int) $parts[2] + 1; echo implode(".", $parts);' "$paperless_version")
 compose up -d --wait --wait-timeout 180 app
+backgroundjobs_mode=$(compose exec -T -u www-data app php occ config:system:get backgroundjobs_mode)
+test "$backgroundjobs_mode" = cron
 compose exec -T -u www-data app php occ app:list --output=json | docker run --rm -i --entrypoint php cloud-sharelinkviewtracker:local -r '
 $apps = json_decode(stream_get_contents(STDIN), true, 512, JSON_THROW_ON_ERROR);
 if (($apps["enabled"]["sharelinkviewtracker"] ?? null) !== $argv[1]) { exit(1); }
