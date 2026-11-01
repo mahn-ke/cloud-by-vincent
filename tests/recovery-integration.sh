@@ -29,4 +29,12 @@ compose exec -T -u www-data app php occ app:list --output=json | docker run --rm
 $apps = json_decode(stream_get_contents(STDIN), true, 512, JSON_THROW_ON_ERROR);
 if (($apps["enabled"]["sharelinkviewtracker"] ?? null) !== $argv[1]) { exit(1); }
 ' "$current_version"
-echo "Interrupted managed maintenance recovery passed."
+
+compose exec -T -u www-data app php occ maintenance:mode --on
+compose exec -T app touch /var/www/html/.sharelinkviewtracker-managed-maintenance /var/www/html/.sharelinkviewtracker.lock
+compose restart app
+compose up -d --wait --wait-timeout 120 app
+compose exec -T app php -r 'require "/var/www/html/config/config.php"; exit(!empty($CONFIG["maintenance"]) ? 1 : 0);'
+compose exec -T app test ! -f /var/lib/cloud/sharelinkviewtracker-managed-maintenance
+compose exec -T -u www-data app php occ integrity:check-core
+echo "Interrupted managed maintenance recovery and legacy maintenance marker migration passed."

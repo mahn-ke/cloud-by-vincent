@@ -41,12 +41,21 @@ cron waits until both packaged app versions match the initialized volume.
 5. Verify `docker compose exec -u www-data app php occ app:list` and access a
 	public share to check the activity entry.
 
-Startup synchronizes only `custom_apps/sharelinkviewtracker` before Nextcloud's
+Startup synchronizes only `custom_apps/sharelinkviewtracker` and
+`custom_apps/paperlessforwarder` before Nextcloud's
 initialization, runs app migrations even when the Nextcloud version is unchanged,
 and enables the app before Apache starts. A shared lock serializes initialization
 and cron; old cron containers skip execution when their packaged app version no
 longer matches the initialized volume. Cron starts only after the web healthcheck
 passes. Long-running cron jobs can delay initialization until they complete.
+
+Both containers must mount the shared `cloud_runtime` volume at `/var/lib/cloud`.
+It holds the lock, readiness files, and managed-maintenance marker outside
+Nextcloud's signed core directory. Startup migrates the legacy root-level markers
+after waiting for any active legacy cron pass; the replacement cron container
+removes any legacy lock recreated during rollout. Deploy both containers together.
+After upgrading, run `docker compose exec -u www-data app php occ integrity:check-core`
+to refresh Nextcloud's cached integrity result. Do not disable integrity checks.
 
 Manual maintenance mode is preserved and defers app initialization. After
 finishing maintenance, turn it off and restart the app container to initialize
@@ -59,8 +68,9 @@ installation. Without them, finish web installation and restart the app; the
 deployment healthcheck will not pass until initialization is complete.
 
 The app's Nextcloud compatibility range is enforced by `occ app:enable`; do not
-force-enable it after a Nextcloud major upgrade. The app is unsigned and may
-produce integrity warnings. App downgrades are refused: reverting an image is
+force-enable it after a Nextcloud major upgrade. Both custom apps are unsigned;
+Nextcloud skips their app signature checks. This is separate from the signed core
+integrity check, which must pass. App downgrades are refused: reverting an image is
 not a substitute for restoring a database/volume backup after migrations.
 
 ### Local integration checks
@@ -78,4 +88,5 @@ sh tests/integration.sh
 
 The test uses a disposable SQLite instance, isolated containers, and a new named
 volume, which it removes afterward. It checks first enablement, cron startup,
-restart, an app-only upgrade, maintenance preservation, and downgrade refusal.
+restart, app-only upgrades, maintenance preservation, downgrade refusal, core
+integrity, and migration of legacy lifecycle markers.

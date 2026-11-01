@@ -31,7 +31,7 @@ fi
 php /var/www/html/occ app:enable sharelinkviewtracker
 if [ "${CLOUD_MANAGED_MAINTENANCE:-0}" = 1 ]; then
     php /var/www/html/occ maintenance:mode --off
-    rm -f /var/www/html/.sharelinkviewtracker-managed-maintenance
+    rm -f /var/lib/cloud/sharelinkviewtracker-managed-maintenance
 fi
-php -r 'echo simplexml_load_file("/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml")->version;' > /var/www/html/.sharelinkviewtracker-ready
+php -r 'echo simplexml_load_file("/opt/nextcloud-apps/sharelinkviewtracker/appinfo/info.xml")->version;' > /var/lib/cloud/sharelinkviewtracker-ready
 flock -u 9
