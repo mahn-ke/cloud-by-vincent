@@ -27,8 +27,8 @@ jobs:
             (.services.cron.environment | has("PAPERLESS_API_TOKEN")) and
             (.services.app.environment.PAPERLESS_FORWARDER_MODE == "off") and
             (.services.cron.environment.PAPERLESS_FORWARDER_MODE == "off") and
-            (.services.app.environment.PAPERLESS_FORWARDER_PATH == "/Paperless/_forwarder-test") and
-            (.services.cron.environment.PAPERLESS_FORWARDER_PATH == "/Paperless/_forwarder-test")
+            (.services.app.environment.PAPERLESS_FORWARDER_PATH == "/Paperless") and
+            (.services.cron.environment.PAPERLESS_FORWARDER_PATH == "/Paperless")
           '
       - name: Build cloud image with released app
         run: docker build -t cloud-sharelinkviewtracker:local app
