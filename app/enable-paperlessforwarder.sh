@@ -33,7 +33,7 @@ fi
 php /var/www/html/occ app:enable paperlessforwarder
 if [ "${CLOUD_MANAGED_MAINTENANCE:-0}" = 1 ]; then
     php /var/www/html/occ maintenance:mode --off
-    rm -f /var/www/html/.sharelinkviewtracker-managed-maintenance
+    rm -f /var/lib/cloud/sharelinkviewtracker-managed-maintenance
 fi
-printf '%s\n' "$packaged" > /var/www/html/.paperlessforwarder-ready
+printf '%s\n' "$packaged" > /var/lib/cloud/paperlessforwarder-ready
 flock -u 9

@@ -11,6 +11,7 @@ services:
       PAPERLESS_FORWARDER_PATH: /Paperless
     volumes:
       - nextcloud:/var/www/html
+      - cloud_runtime:/var/lib/cloud
     healthcheck:
       test: ["CMD", "/usr/local/bin/cloud/healthcheck.sh"]
       interval: 2s
@@ -25,6 +26,8 @@ services:
         condition: service_healthy
     volumes:
       - nextcloud:/var/www/html
+      - cloud_runtime:/var/lib/cloud
 
 volumes:
   nextcloud:
+  cloud_runtime:

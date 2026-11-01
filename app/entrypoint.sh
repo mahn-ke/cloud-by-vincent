@@ -1,8 +1,21 @@
 #!/bin/sh
 set -eu
 
-exec 9>/var/www/html/.sharelinkviewtracker.lock
+mkdir -p /var/lib/cloud
+chown www-data:www-data /var/lib/cloud
+exec 9>/var/lib/cloud/sharelinkviewtracker.lock
 flock -x 9
+
+# Wait for any legacy cron pass before invalidating its readiness markers.
+if [ -f /var/www/html/.sharelinkviewtracker.lock ]; then
+    exec 8>/var/www/html/.sharelinkviewtracker.lock
+    flock -x 8
+fi
+if [ -f /var/www/html/.sharelinkviewtracker-managed-maintenance ]; then
+    mv /var/www/html/.sharelinkviewtracker-managed-maintenance /var/lib/cloud/sharelinkviewtracker-managed-maintenance
+fi
+rm -f /var/www/html/.sharelinkviewtracker-ready /var/www/html/.paperlessforwarder-ready /var/www/html/.sharelinkviewtracker.lock
+exec 8>&-
 
 source=/opt/nextcloud-apps/sharelinkviewtracker
 target=/var/www/html/custom_apps/sharelinkviewtracker
@@ -11,7 +24,7 @@ paperless_source=/opt/nextcloud-apps/paperlessforwarder
 paperless_target=/var/www/html/custom_apps/paperlessforwarder
 paperless_version=$(php -r 'echo simplexml_load_file($argv[1])->version;' "$paperless_source/appinfo/info.xml")
 export CLOUD_MANAGED_MAINTENANCE=0
-managed_marker=/var/www/html/.sharelinkviewtracker-managed-maintenance
+managed_marker=/var/lib/cloud/sharelinkviewtracker-managed-maintenance
 
 if [ -f "$target/appinfo/info.xml" ]; then
     previous=$(php -r 'echo simplexml_load_file($argv[1])->version;' "$target/appinfo/info.xml")
@@ -62,5 +75,5 @@ mkdir -p "$target"
 rsync -a --delete --chown=www-data:www-data "$source/" "$target/"
 mkdir -p "$paperless_target"
 rsync -a --delete --chown=www-data:www-data "$paperless_source/" "$paperless_target/"
-rm -f /var/www/html/.sharelinkviewtracker-ready /var/www/html/.paperlessforwarder-ready
+rm -f /var/lib/cloud/sharelinkviewtracker-ready /var/lib/cloud/paperlessforwarder-ready
 exec /entrypoint.sh "$@"

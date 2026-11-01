@@ -6,6 +6,7 @@ services:
       - 2563:80
     volumes:
       - nextcloud:/var/www/html
+      - cloud_runtime:/var/lib/cloud
     healthcheck:
       test: ["CMD", "/usr/local/bin/cloud/healthcheck.sh"]
       interval: 10s
@@ -59,6 +60,7 @@ services:
         condition: service_started
     volumes:
       - nextcloud:/var/www/html
+      - cloud_runtime:/var/lib/cloud
     restart: unless-stopped
     entrypoint: /usr/local/bin/cloud/cron.sh
     environment:
@@ -73,3 +75,4 @@ services:
 volumes:
   nextcloud:
   database:
+  cloud_runtime:
