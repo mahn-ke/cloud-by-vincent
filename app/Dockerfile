@@ -1,5 +1,5 @@
 ARG SHARELINKVIEWTRACKER_IMAGE=ghcr.io/vimaster/nextcloud-sharelinkviewtracker:v1.0.2@sha256:76b99a05b2151aaae79ee6f841a22d4d59c8035442a2610aa739da1a44eda8b8
-ARG PAPERLESSFORWARDER_IMAGE=ghcr.io/vimaster/nextcloud-paperlessforwarder:v1.0.4@sha256:348b60c0862d533163b5b27efc366da7081af9d8ffa0ca6a4a080c4a2d5da7a2
+ARG PAPERLESSFORWARDER_IMAGE=ghcr.io/vimaster/nextcloud-paperlessforwarder:v1.0.5@sha256:79f2e81220ad75178d1081758125bedb7eaa087c62339869981ebc819857d942
 FROM ${SHARELINKVIEWTRACKER_IMAGE} AS tracker
 
 FROM ${PAPERLESSFORWARDER_IMAGE} AS paperlessforwarder
