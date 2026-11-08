@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
       - name: Validate shell and Compose configuration
         run: |
-          sh -n app/*.sh tests/integration.sh
+          for script in app/*.sh tests/*.sh; do sh -n "$script"; done
           docker compose config --quiet
           docker compose config --format json | jq -e '
             (.services.app.environment | has("PAPERLESS_API_TOKEN") | not) and
@@ -36,3 +36,5 @@ jobs:
         run: sh tests/integration.sh
       - name: Test interrupted managed maintenance recovery
         run: sh tests/recovery-integration.sh
+      - name: Test Text integrity after an official image upgrade
+        run: sh tests/text-integrity-integration.sh

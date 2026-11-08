@@ -10,5 +10,6 @@ COPY --from=paperlessforwarder /paperlessforwarder /opt/nextcloud-apps/paperless
 COPY --chmod=755 entrypoint.sh cron.sh healthcheck.sh /usr/local/bin/cloud/
 COPY --chmod=755 enable-sharelinkviewtracker.sh /docker-entrypoint-hooks.d/before-starting/
 COPY --chmod=755 enable-paperlessforwarder.sh /docker-entrypoint-hooks.d/before-starting/
+COPY --chmod=755 verify-text-integrity.sh /docker-entrypoint-hooks.d/post-upgrade/
 ENTRYPOINT ["/usr/local/bin/cloud/entrypoint.sh"]
 CMD ["apache2-foreground"]

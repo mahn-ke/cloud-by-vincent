@@ -76,6 +76,32 @@ Nextcloud skips their app signature checks. This is separate from the signed cor
 integrity check, which must pass. App downgrades are refused: reverting an image is
 not a substitute for restoring a database/volume backup after migrations.
 
+### Retiring the Text session-close hotfix
+
+The production Text 9.0.1 controller has a temporary source hotfix for mobile
+session closing ([nextcloud/text#9385](https://github.com/nextcloud/text/pull/9385)).
+Its `INVALID_HASH` warning is genuine; do not disable integrity checks, alter
+signature metadata, or restore the old controller while it still contains the
+session-close bug.
+
+The official stable-35 backport is
+[nextcloud/text#9510](https://github.com/nextcloud/text/pull/9510), included in
+Text 9.0.2 in Nextcloud 35.0.3 RC1. As of November 8, 2026, the latest stable
+Nextcloud image is still 35.0.2. Keep that pin until an official stable image
+containing the fix is published; do not deploy the release candidate merely to
+remove the warning. Renovate tracks the base image in `app/Dockerfile`.
+
+When updating to that stable release, back up the database and volume and deploy
+web and cron together. The official image entrypoint replaces bundled Text with
+the release's signed files during the Nextcloud upgrade. The post-upgrade
+`verify-text-integrity.sh` hook then runs `occ integrity:check-app text`, refreshing
+the cached warning and reporting any remaining signature failures with a nonzero
+exit status. An ordinary same-version restart does not replace the hotfix.
+
+After deployment, verify `docker compose exec -u www-data app php occ integrity:check-app text`
+and test closing the rich editor followed by a plain-editor save on a disposable
+note. Both requests should succeed without a lingering Text lock.
+
 ### Local integration checks
 
 Build the Paperless Forwarder app artifact in its repository first, then run
@@ -87,9 +113,17 @@ docker build -f ../nextcloud-PaperlessForwarder/packaging/Dockerfile \
 docker build --build-arg PAPERLESSFORWARDER_IMAGE=paperlessforwarder-artifact:local \
   -t cloud-sharelinkviewtracker:local app
 sh tests/integration.sh
+sh tests/text-integrity-integration.sh
 ```
 
 The test uses a disposable SQLite instance, isolated containers, and a new named
 volume, which it removes afterward. It checks first enablement, cron startup,
 restart, app-only upgrades, maintenance preservation, downgrade refusal, core
 integrity, and migration of legacy lifecycle markers.
+
+The Text test uses a separate disposable instance. It modifies the signed
+controller, confirms that a same-version restart preserves it and its warning,
+then lowers only the fixture's installed code version to exercise the official
+image upgrade path. It checks signed-file replacement and cached-warning removal
+without rescanning to hide a missing hook. This tests the deployment lifecycle,
+not the availability or session-close behavior of a future stable release.
