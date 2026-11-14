@@ -4,7 +4,7 @@ FROM ${SHARELINKVIEWTRACKER_IMAGE} AS tracker
 
 FROM ${PAPERLESSFORWARDER_IMAGE} AS paperlessforwarder
 
-FROM nextcloud:35.0.2-apache
+FROM nextcloud:35.0.3-apache
 COPY --from=tracker /sharelinkviewtracker /opt/nextcloud-apps/sharelinkviewtracker
 COPY --from=paperlessforwarder /paperlessforwarder /opt/nextcloud-apps/paperlessforwarder
 COPY --chmod=755 entrypoint.sh cron.sh healthcheck.sh /usr/local/bin/cloud/
